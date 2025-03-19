@@ -14,7 +14,7 @@ class _MapPageState extends State<MapPage> {
   LocationData? _currentLocation;
   final Location _locationService = Location();
   List<LatLng> _additionalPoints = [];
-  final MapController _mapController = MapController(); // Controlador del mapa
+  final MapController _mapController = MapController();
 
   @override
   void initState() {
@@ -32,7 +32,6 @@ class _MapPageState extends State<MapPage> {
       _currentLocation = locationData;
     });
 
-    // Escuchar cambios de ubicación
     _locationService.onLocationChanged.listen((LocationData result) {
       setState(() {
         _currentLocation = result;
@@ -104,7 +103,6 @@ class _MapPageState extends State<MapPage> {
                     _additionalPoints.add(newPoint);
                   });
 
-                  // Mover el mapa a la nueva ubicación
                   _mapController.move(newPoint, 13.0);
 
                   Navigator.of(context).pop();
@@ -125,7 +123,7 @@ class _MapPageState extends State<MapPage> {
       body: _currentLocation == null
           ? const Center(child: CircularProgressIndicator())
           : FlutterMap(
-              mapController: _mapController, // Conectar el controlador al mapa
+              mapController: _mapController,
               options: MapOptions(
                 center: LatLng(
                   _currentLocation!.latitude!,
