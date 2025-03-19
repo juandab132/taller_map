@@ -1,0 +1,2 @@
+C:/Users/Juan David/Downloads/flutetersjsadf/maps/android/app/.cxx/Debug/3w46206x/armeabi-v7a/CMakeFiles/edit_cache.dir
+C:/Users/Juan David/Downloads/flutetersjsadf/maps/android/app/.cxx/Debug/3w46206x/armeabi-v7a/CMakeFiles/rebuild_cache.dir

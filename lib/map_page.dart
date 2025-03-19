@@ -14,6 +14,7 @@ class _MapPageState extends State<MapPage> {
   LocationData? _currentLocation;
   final Location _locationService = Location();
   List<LatLng> _additionalPoints = [];
+  final MapController _mapController = MapController(); // Controlador del mapa
 
   @override
   void initState() {
@@ -31,7 +32,7 @@ class _MapPageState extends State<MapPage> {
       _currentLocation = locationData;
     });
 
-    // Listen for location changes
+    // Escuchar cambios de ubicación
     _locationService.onLocationChanged.listen((LocationData result) {
       setState(() {
         _currentLocation = result;
@@ -62,25 +63,59 @@ class _MapPageState extends State<MapPage> {
     );
   }
 
-  void _generateAdditionalPoints() {
-    if (_currentLocation != null) {
-      setState(() {
-        _additionalPoints = [
-          LatLng(_currentLocation!.latitude! + 0.01,
-              _currentLocation!.longitude!), // North
-          LatLng(_currentLocation!.latitude! - 0.01,
-              _currentLocation!.longitude!), // South
-          LatLng(_currentLocation!.latitude!,
-              _currentLocation!.longitude! + 0.01), // East
-          LatLng(_currentLocation!.latitude!,
-              _currentLocation!.longitude! - 0.01), // West
-          LatLng(_currentLocation!.latitude! + 0.01,
-              _currentLocation!.longitude! + 0.01), // NE
-          LatLng(_currentLocation!.latitude! - 0.01,
-              _currentLocation!.longitude! - 0.01), // SW
-        ];
-      });
-    }
+  void _addLocationPoint() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        double? lat, lng;
+        return AlertDialog(
+          title: const Text("Agregar ubicación"),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                decoration: const InputDecoration(labelText: "Latitud"),
+                keyboardType: TextInputType.number,
+                onChanged: (value) {
+                  lat = double.tryParse(value);
+                },
+              ),
+              TextField(
+                decoration: const InputDecoration(labelText: "Longitud"),
+                keyboardType: TextInputType.number,
+                onChanged: (value) {
+                  lng = double.tryParse(value);
+                },
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text("Cancelar"),
+            ),
+            TextButton(
+              onPressed: () {
+                if (lat != null && lng != null) {
+                  LatLng newPoint = LatLng(lat!, lng!);
+                  setState(() {
+                    _additionalPoints.add(newPoint);
+                  });
+
+                  // Mover el mapa a la nueva ubicación
+                  _mapController.move(newPoint, 13.0);
+
+                  Navigator.of(context).pop();
+                }
+              },
+              child: const Text("Fijar"),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -90,6 +125,7 @@ class _MapPageState extends State<MapPage> {
       body: _currentLocation == null
           ? const Center(child: CircularProgressIndicator())
           : FlutterMap(
+              mapController: _mapController, // Conectar el controlador al mapa
               options: MapOptions(
                 center: LatLng(
                   _currentLocation!.latitude!,
@@ -112,15 +148,10 @@ class _MapPageState extends State<MapPage> {
                         _currentLocation!.latitude!,
                         _currentLocation!.longitude!,
                       ),
-                      builder: (ctx) => GestureDetector(
-                        onTap: () {
-                          _showLocationDialog();
-                        },
-                        child: const Icon(
-                          Icons.location_on,
-                          color: Colors.red,
-                          size: 40,
-                        ),
+                      builder: (ctx) => const Icon(
+                        Icons.location_on,
+                        color: Colors.red,
+                        size: 40,
                       ),
                     ),
                     ..._additionalPoints.map((point) => Marker(
@@ -148,8 +179,8 @@ class _MapPageState extends State<MapPage> {
           ),
           const SizedBox(height: 16),
           FloatingActionButton(
-            onPressed: _generateAdditionalPoints,
-            child: const Icon(Icons.add_location_alt),
+            onPressed: _addLocationPoint,
+            child: const Icon(Icons.add_location),
           ),
         ],
       ),
